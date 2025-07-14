@@ -1,0 +1,98 @@
+name: Draft a new Release on zip push
+
+on:
+  push:
+    paths:
+      - "Releases/*.zip"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get new zip file and extract version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            # Manual run - find the zip file with the highest version number
+            latest_zip=""
+            latest_version=""
+            
+            for zip in Releases/*.zip; do
+              if [[ -f "$zip" ]]; then
+                filename=$(basename "$zip")
+                version=$(echo "$filename" | sed 's/.*-\(.*\)\.zip/\1/')
+                
+                if [[ -z "$latest_version" ]] || printf '%s\n%s\n' "$latest_version" "$version" | sort -V | tail -n1 | grep -q "^$version$"; then
+                  latest_version="$version"
+                  latest_zip="$zip"
+                fi
+              fi
+            done
+            
+            if [[ -z "$latest_zip" ]]; then
+              echo "No zip files found in Releases folder"
+              exit 1
+            fi
+            
+            zip_file="$latest_zip"
+            echo "Manual dispatch: using zip with highest version: $zip_file (v$latest_version)"
+          else
+            # Push event - find newly added zip files
+            new_files=$(git diff --name-only --diff-filter=A HEAD~1 HEAD | grep "^Releases/.*\.zip$" || true)
+            if [[ -z "$new_files" ]]; then
+              echo "No new zip files added, exiting"
+              exit 0
+            fi
+            zip_file=$(echo "$new_files" | head -n1)
+            echo "Push event: found new zip: $zip_file"
+          fi
+          
+          filename=$(basename "$zip_file")
+          version=$(echo "$filename" | sed 's/.*-\(.*\)\.zip/\1/')
+          
+          echo "tag=${version}" >> $GITHUB_OUTPUT
+          echo "zip_file=${zip_file}" >> $GITHUB_OUTPUT
+          echo "Final: zip_file=$zip_file, version=$version"
+
+      - name: Create tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${{ steps.version.outputs.tag }}"
+          
+          if git rev-parse --verify "refs/tags/${tag}" >/dev/null 2>&1; then
+            echo "Tag ${tag} already exists"
+          else
+            echo "Creating tag ${tag}"
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag -a "${tag}" -m "Release ${tag}"
+            git push origin "${tag}"
+          fi
+
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${{ steps.version.outputs.tag }}"
+          zip_file="${{ steps.version.outputs.zip_file }}"
+          
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists, skipping"
+            exit 0
+          fi
+          
+          gh release create "$tag" \
+            --title="Release $tag" \
+            --draft \
+            --generate-notes \
+            "$zip_file"
+          
+          echo "Created draft release: $tag"
