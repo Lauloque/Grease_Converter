@@ -1,14 +1,14 @@
 schema_version = "1.0.0"
-id = "some_addon"
-version = "1.0.0"
-name = "Addon Name"
-tagline = "Short description"
+id = "grease_converter"
+version = "0.1.2"
+name = "Grease Converter"
+tagline = "Convert annotations to and from Grease Pencil objects."
 maintainer = "Loïc \"Lauloque\" Dautry"
 type = "add-on"
-website = "https://github.com/Lauloque/repo_name"
+website = "https://github.com/Lauloque/Grease_Converter"
 # Optional list defined by Blender and server, see:
 # https://docs.blender.org/manual/en/dev/advanced/extensions/tags.html
-tags = ["Object"]
+tags = ["Object", "Grease Pencil"]
 blender_version_min = "4.2.0"
 # blender_version_max = "5.1.0"
 # License conforming to https://spdx.org/licenses/ (use "SPDX: prefix)
