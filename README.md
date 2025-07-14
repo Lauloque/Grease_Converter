@@ -7,7 +7,7 @@
 
 [![GitHub license](https://img.shields.io/github/license/Lauloque/bl_addon_template?style=for-the-badge&labelColor=rgb(63,64,64))](https://github.com/Lauloque/bl_addon_template/blob/master/LICENSE) ![Minimum Supported Blender Version](https://img.shields.io/badge/Blender-4.2LTS+-green?style=for-the-badge&logo=blender&logoColor=white&labelColor=rgb(64,64,64)) [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2H818FHX)
 
-Grease Converter is a Blender Add-on that can convert annotations to grease pencil objects and vise versa.
+Grease Converter is a Blender Add-on [forked from Blender Studio's Grease Pencil Converter](https://projects.blender.org/studio/blender-studio-tools/src/commit/2c8e10a4811fbbaf75b9a32489ed4cd3c6451aca/scripts-blender/addons/grease_converter) that can convert annotations to grease pencil objects and vise versa.
 
 After the add-on is installed you have 2 new operators available.
 
